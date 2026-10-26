@@ -1,0 +1,425 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="計算カード">
+<title>計算フラッシュカード</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: "Hiragino Maru Gothic ProN", "Hiragino Sans", sans-serif;
+    background: #fdf6e3;
+    -webkit-user-select: none;
+    user-select: none;
+    touch-action: manipulation;
+  }
+  #app {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .screen {
+    width: 100%;
+    height: 100%;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .screen.active {
+    display: flex;
+  }
+
+  /* --- モード選択画面 --- */
+  .screen h1 {
+    font-size: 2rem;
+    color: #444;
+    margin-bottom: 2rem;
+  }
+  .mode-btn {
+    font-size: 1.8rem;
+    padding: 1.2rem 2.5rem;
+    margin: 0.8rem;
+    border: none;
+    border-radius: 20px;
+    color: #fff;
+    cursor: pointer;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.2);
+    min-width: 320px;
+  }
+  .mode-btn:active {
+    transform: translateY(3px);
+    box-shadow: 0 1px 0 rgba(0,0,0,0.2);
+  }
+  #mode-add { background: #4caf7d; }
+  #mode-carry { background: #2e8b57; }
+  #mode-sub { background: #4a90d9; }
+  #mode-borrow { background: #2f6fa8; }
+  #mode-ten { background: #e08a3c; }
+  #mode-mult { background: #8e6fce; }
+
+  /* --- かけざん段選択・順序選択画面 --- */
+  .dan-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 480px;
+  }
+  .dan-btn {
+    width: 80px;
+    height: 80px;
+    margin: 8px;
+    font-size: 1.6rem;
+    border: none;
+    border-radius: 16px;
+    background: #8e6fce;
+    color: #fff;
+    cursor: pointer;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.2);
+  }
+  .dan-btn:active {
+    transform: translateY(3px);
+    box-shadow: 0 1px 0 rgba(0,0,0,0.2);
+  }
+  .dan-btn.total {
+    width: 168px;
+    background: #c2185b;
+  }
+  #order-sequential { background: #388e6c; }
+  #order-random { background: #d17a22; }
+
+  /* --- カード画面 --- */
+  #card-screen {
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+  }
+  .progress {
+    position: absolute;
+    top: 24px;
+    font-size: 1.2rem;
+    color: #999;
+  }
+  .back-btn {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    font-size: 1.1rem;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 12px;
+    background: #ccc;
+    color: #333;
+    cursor: pointer;
+  }
+  .problem {
+    font-size: 5rem;
+    color: #333;
+    letter-spacing: 0.1em;
+  }
+  .answer {
+    font-size: 6rem;
+    font-weight: bold;
+    color: #d9534f;
+    margin-top: 1rem;
+    visibility: hidden;
+  }
+  .answer.show {
+    visibility: visible;
+  }
+  .hint {
+    margin-top: 3rem;
+    font-size: 1.1rem;
+    color: #aaa;
+  }
+  .timer {
+    position: absolute;
+    top: 24px;
+    right: 24px;
+    font-size: 1.2rem;
+    color: #999;
+  }
+
+  /* --- 結果画面 --- */
+  #result-screen {
+    cursor: pointer;
+  }
+  #result-screen h2 {
+    font-size: 2.2rem;
+    color: #444;
+    margin-bottom: 1rem;
+  }
+  #result-time {
+    font-size: 4rem;
+    font-weight: bold;
+    color: #4a90d9;
+    margin-bottom: 2rem;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div id="select-screen" class="screen active">
+    <h1>モードをえらんでね</h1>
+    <button class="mode-btn" id="mode-add">たしざん</button>
+    <button class="mode-btn" id="mode-carry">くりあがり たしざん</button>
+    <button class="mode-btn" id="mode-sub">ひきざん</button>
+    <button class="mode-btn" id="mode-borrow">くりさがり ひきざん</button>
+    <button class="mode-btn" id="mode-ten">10のなかよし（□+◯=10）</button>
+    <button class="mode-btn" id="mode-mult">かけざん</button>
+  </div>
+
+  <div id="mult-dan-screen" class="screen">
+    <button class="back-btn" id="mult-dan-back">もどる</button>
+    <h1>なんの だん？</h1>
+    <div class="dan-grid" id="dan-grid"></div>
+  </div>
+
+  <div id="mult-order-screen" class="screen">
+    <button class="back-btn" id="mult-order-back">もどる</button>
+    <h1 id="mult-order-title"></h1>
+    <button class="mode-btn" id="order-sequential">じゅんばん</button>
+    <button class="mode-btn" id="order-random">ランダム</button>
+  </div>
+
+  <div id="card-screen" class="screen">
+    <button class="back-btn" id="back-btn">もどる</button>
+    <div class="progress" id="progress"></div>
+    <div class="timer" id="timer">0.0びょう</div>
+    <div class="problem" id="problem"></div>
+    <div class="answer" id="answer"></div>
+    <div class="hint" id="hint">タップして こたえをみる</div>
+  </div>
+
+  <div id="result-screen" class="screen">
+    <h2>ぜんぶ できた！</h2>
+    <div id="result-time"></div>
+    <div class="hint">タップして モードせんたくへ</div>
+  </div>
+
+</div>
+
+<script>
+(function () {
+  const selectScreen = document.getElementById('select-screen');
+  const multDanScreen = document.getElementById('mult-dan-screen');
+  const multOrderScreen = document.getElementById('mult-order-screen');
+  const multOrderTitleEl = document.getElementById('mult-order-title');
+  const cardScreen = document.getElementById('card-screen');
+  const resultScreen = document.getElementById('result-screen');
+  const problemEl = document.getElementById('problem');
+  const answerEl = document.getElementById('answer');
+  const progressEl = document.getElementById('progress');
+  const hintEl = document.getElementById('hint');
+  const timerEl = document.getElementById('timer');
+  const resultTimeEl = document.getElementById('result-time');
+
+  let deck = [];
+  let index = 0;
+  let revealed = false;
+  let startTime = 0;
+  let timerHandle = null;
+  let pendingDan = null;
+
+  function formatSeconds(ms) {
+    return (ms / 1000).toFixed(1) + 'びょう';
+  }
+
+  function startTimer() {
+    startTime = performance.now();
+    timerEl.textContent = formatSeconds(0);
+    timerHandle = setInterval(() => {
+      timerEl.textContent = formatSeconds(performance.now() - startTime);
+    }, 100);
+  }
+
+  function stopTimer() {
+    if (timerHandle !== null) {
+      clearInterval(timerHandle);
+      timerHandle = null;
+    }
+    return performance.now() - startTime;
+  }
+
+  function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  function buildAddDeck() {
+    const cards = [];
+    for (let a = 1; a <= 10; a++) {
+      for (let b = 1; b <= 10; b++) {
+        cards.push({ text: `${a} + ${b} =`, answer: a + b });
+      }
+    }
+    return shuffle(cards);
+  }
+
+  function buildCarryAddDeck() {
+    const cards = [];
+    for (let a = 1; a <= 9; a++) {
+      for (let b = 1; b <= 9; b++) {
+        if (a + b >= 10) {
+          cards.push({ text: `${a} + ${b} =`, answer: a + b });
+        }
+      }
+    }
+    return shuffle(cards);
+  }
+
+  function buildSubDeck() {
+    const cards = [];
+    for (let a = 1; a <= 10; a++) {
+      for (let b = 1; b <= a; b++) {
+        cards.push({ text: `${a} − ${b} =`, answer: a - b });
+      }
+    }
+    return shuffle(cards);
+  }
+
+  function buildBorrowSubDeck() {
+    const cards = [];
+    for (let a = 11; a <= 18; a++) {
+      const ones = a - 10;
+      for (let b = ones + 1; b <= 9; b++) {
+        cards.push({ text: `${a} − ${b} =`, answer: a - b });
+      }
+    }
+    return shuffle(cards);
+  }
+
+  function buildTenDeck() {
+    const cards = [];
+    for (let a = 0; a <= 10; a++) {
+      const b = 10 - a;
+      cards.push({ text: `10 = ${a} + ？`, answer: b });
+    }
+    return shuffle(cards);
+  }
+
+  function buildMultDeck(dan, ordered) {
+    const cards = [];
+    if (dan === 'total') {
+      for (let a = 1; a <= 9; a++) {
+        for (let b = 1; b <= 9; b++) {
+          cards.push({ text: `${a} × ${b} =`, answer: a * b });
+        }
+      }
+    } else {
+      for (let b = 1; b <= 9; b++) {
+        cards.push({ text: `${dan} × ${b} =`, answer: dan * b });
+      }
+    }
+    return ordered ? cards : shuffle(cards);
+  }
+
+  function startMode(builder) {
+    deck = builder();
+    index = 0;
+    revealed = false;
+    showScreen(cardScreen);
+    startTimer();
+    renderCard();
+  }
+
+  function renderCard() {
+    if (index >= deck.length) {
+      const elapsed = stopTimer();
+      resultTimeEl.textContent = formatSeconds(elapsed);
+      showScreen(resultScreen);
+      return;
+    }
+    const card = deck[index];
+    problemEl.textContent = card.text;
+    answerEl.textContent = card.answer;
+    answerEl.classList.remove('show');
+    revealed = false;
+    hintEl.textContent = 'タップして こたえをみる';
+    progressEl.textContent = `${index + 1} / ${deck.length}`;
+  }
+
+  function handleCardTap() {
+    if (!revealed) {
+      answerEl.classList.add('show');
+      hintEl.textContent = 'タップして つぎへ';
+      revealed = true;
+    } else {
+      index++;
+      renderCard();
+    }
+  }
+
+  function showScreen(screen) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    screen.classList.add('active');
+  }
+
+  function selectDan(dan) {
+    pendingDan = dan;
+    multOrderTitleEl.textContent = dan === 'total' ? 'ぜんぶ' : `${dan}の だん`;
+    showScreen(multOrderScreen);
+  }
+
+  const danGrid = document.getElementById('dan-grid');
+  for (let n = 1; n <= 9; n++) {
+    const btn = document.createElement('button');
+    btn.className = 'dan-btn';
+    btn.textContent = `${n}の だん`;
+    btn.addEventListener('click', () => selectDan(n));
+    danGrid.appendChild(btn);
+  }
+  const totalBtn = document.createElement('button');
+  totalBtn.className = 'dan-btn total';
+  totalBtn.textContent = 'ぜんぶ';
+  totalBtn.addEventListener('click', () => selectDan('total'));
+  danGrid.appendChild(totalBtn);
+
+  document.getElementById('mode-add').addEventListener('click', () => startMode(buildAddDeck));
+  document.getElementById('mode-carry').addEventListener('click', () => startMode(buildCarryAddDeck));
+  document.getElementById('mode-sub').addEventListener('click', () => startMode(buildSubDeck));
+  document.getElementById('mode-borrow').addEventListener('click', () => startMode(buildBorrowSubDeck));
+  document.getElementById('mode-ten').addEventListener('click', () => startMode(buildTenDeck));
+  document.getElementById('mode-mult').addEventListener('click', () => showScreen(multDanScreen));
+  document.getElementById('order-sequential').addEventListener('click', () => startMode(() => buildMultDeck(pendingDan, true)));
+  document.getElementById('order-random').addEventListener('click', () => startMode(() => buildMultDeck(pendingDan, false)));
+  document.getElementById('mult-dan-back').addEventListener('click', (e) => {
+    e.stopPropagation();
+    showScreen(selectScreen);
+  });
+  document.getElementById('mult-order-back').addEventListener('click', (e) => {
+    e.stopPropagation();
+    showScreen(multDanScreen);
+  });
+  document.getElementById('back-btn').addEventListener('click', (e) => {
+    e.stopPropagation();
+    stopTimer();
+    showScreen(selectScreen);
+  });
+  cardScreen.addEventListener('click', handleCardTap);
+  resultScreen.addEventListener('click', () => showScreen(selectScreen));
+
+  document.addEventListener('keydown', (e) => {
+    if (e.code !== 'Space') return;
+    e.preventDefault();
+    if (cardScreen.classList.contains('active')) {
+      handleCardTap();
+    } else if (resultScreen.classList.contains('active')) {
+      showScreen(selectScreen);
+    }
+  });
+})();
+</script>
+</body>
+</html>

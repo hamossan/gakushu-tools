@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="かんじカード">
+<title>かんじカード</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body data-screen="setup">
+
+  <div id="setup-screen" class="screen">
+    <h1>かんじカード</h1>
+
+    <div class="option-group">
+      <div class="option-label">モード</div>
+      <div class="toggle-row" id="mode-toggle">
+        <button class="toggle-btn selected" data-value="reading">読み</button>
+        <button class="toggle-btn" data-value="writing">書き</button>
+      </div>
+    </div>
+
+    <div class="option-group">
+      <div class="option-label">問題数</div>
+      <div class="toggle-row" id="count-toggle">
+        <button class="toggle-btn selected" data-value="30">30問</button>
+        <button class="toggle-btn" data-value="50">50問</button>
+        <button class="toggle-btn" data-value="80">80問</button>
+      </div>
+    </div>
+
+    <button id="start-btn" class="primary-btn">スタート</button>
+  </div>
+
+  <div id="card-screen" class="screen">
+    <div class="progress" id="progress"></div>
+    <div class="prompt" id="prompt"></div>
+    <div class="answer" id="answer"></div>
+
+    <div class="button-row" id="reveal-row">
+      <button id="reveal-btn" class="primary-btn">こたえを見る</button>
+    </div>
+
+    <div class="button-row" id="grade-row" style="display:none;">
+      <button id="correct-btn" class="grade-btn correct-btn">○ せいかい</button>
+      <button id="incorrect-btn" class="grade-btn incorrect-btn">✗ まちがい</button>
+    </div>
+  </div>
+
+  <div id="results-screen" class="screen">
+    <h2 id="results-headline"></h2>
+    <div id="results-wrong-list" class="wrong-list"></div>
+    <div class="button-row">
+      <button id="retry-btn" class="primary-btn" style="display:none;">まちがえた問題だけ再挑戦</button>
+      <button id="back-btn" class="secondary-btn">モード選択に戻る</button>
+    </div>
+  </div>
+
+  <script src="kanji-data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="がくしゅう">
+<title>がくしゅうツール</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+    font-family: "Hiragino Maru Gothic ProN", "Hiragino Sans", sans-serif;
+    background: #fdf6e3;
+  }
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 3rem 1.5rem;
+  }
+  h1 {
+    font-size: 1.8rem;
+    color: #444;
+    margin-bottom: 2rem;
+  }
+  a.tool-link {
+    display: block;
+    width: 100%;
+    max-width: 360px;
+    font-size: 1.4rem;
+    text-align: center;
+    text-decoration: none;
+    padding: 1.2rem;
+    margin: 0.6rem 0;
+    border-radius: 20px;
+    color: #fff;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.2);
+  }
+  a.tool-link:active {
+    transform: translateY(3px);
+    box-shadow: 0 1px 0 rgba(0,0,0,0.2);
+  }
+  #link-kanji { background: #8e6fce; }
+  #link-calc { background: #4a90d9; }
+</style>
+</head>
+<body>
+  <h1>がくしゅうツール</h1>
+  <a class="tool-link" id="link-kanji" href="漢字フラッシュ/">かんじカード</a>
+  <a class="tool-link" id="link-calc" href="計算フラッシュカード.html">計算フラッシュカード</a>
+</body>
+</html>
