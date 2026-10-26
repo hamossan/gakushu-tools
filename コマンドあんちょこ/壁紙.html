@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>コマンドあんちょこ壁紙</title>
+<!-- 壁紙JPEGの元。1512x982（MacBook Pro 14インチ）を2倍で書き出して 3024x1964 にする -->
+<style>
+* { box-sizing: border-box; margin: 0; }
+html, body { width: 1512px; height: 982px; overflow: hidden; }
+body {
+  background: radial-gradient(ellipse at 20% 0%, #3a1c2c 0%, #1a1520 45%, #121016 100%);
+  color: #e9e4ea;
+  font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", sans-serif;
+  /* 上はメニューバーとノッチ、下はDockを避ける */
+  padding: 58px 44px 96px;
+}
+.title { display: flex; align-items: baseline; gap: 14px; margin-bottom: 14px; }
+.title h1 { font-size: 26px; color: #f06a9b; letter-spacing: .05em; }
+.title p { font-size: 14px; color: #9c929f; }
+.grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; height: 790px; }
+.col { display: flex; flex-direction: column; gap: 16px; }
+.card {
+  background: rgba(255,255,255,.055); border: 1px solid rgba(255,255,255,.09);
+  border-radius: 14px; padding: 11px 14px 10px;
+}
+.card h2 { font-size: 17px; color: #f06a9b; margin-bottom: 6px; }
+.card.sos { border-color: rgba(240,106,155,.55); background: rgba(240,106,155,.10); }
+.card { display: grid; grid-template-columns: max-content 1fr; column-gap: 16px; align-content: start; }
+.card h2 { grid-column: 1 / 3; }
+.r { display: contents; font-size: 15px; line-height: 1.35; }
+.r > span { padding: 4px 0; border-top: 1px solid rgba(255,255,255,.06); font-size: 15px; }
+.card h2 + .r > span { border-top: none; }
+code, kbd {
+  font-family: Menlo, monospace; font-size: 14px; color: #fff;
+  background: rgba(255,255,255,.10); border-radius: 5px; padding: 1px 6px; white-space: nowrap;
+}
+kbd { background: rgba(240,106,155,.22); }
+.d { color: #c9c1cc; }
+.warn code { background: rgba(255,90,90,.25); }
+.warn .d { color: #ff9d9d; }
+.good code { background: rgba(110,210,140,.22); }
+</style>
+</head>
+<body>
+<div class="title">
+  <h1>Macコマンドあんちょこ</h1>
+  <p>⌃ = control　⌘ = command　スペースを含む名前は " " で囲む</p>
+</div>
+<div class="grid">
+  <div class="col">
+    <div class="card sos">
+      <h2>🆘 困ったとき</h2>
+      <div class="r"><span><kbd>⌃ C</kbd></span><span class="d">止まらない・固まった</span></div>
+      <div class="r"><span><kbd>q</kbd></span><span class="d">man・less 画面を抜ける</span></div>
+      <div class="r"><span><kbd>esc</kbd> <kbd>:q!</kbd></span><span class="d">vim から保存せず抜ける</span></div>
+      <div class="r"><span><kbd>esc</kbd> <kbd>:wq</kbd></span><span class="d">vim を保存して抜ける</span></div>
+      <div class="r"><span><code>clear</code></span><span class="d">画面をきれいに（⌘K）</span></div>
+      <div class="r"><span><code>名前 --help</code></span><span class="d">使い方を見る</span></div>
+    </div>
+    <div class="card">
+      <h2>⌨️ 入力を楽にする</h2>
+      <div class="r"><span><kbd>tab</kbd></span><span class="d">入力補完</span></div>
+      <div class="r"><span><kbd>↑</kbd> <kbd>↓</kbd></span><span class="d">前のコマンドを呼び出す</span></div>
+      <div class="r"><span><kbd>⌃ R</kbd></span><span class="d">履歴をキーワード検索</span></div>
+      <div class="r"><span><kbd>⌃ A</kbd> <kbd>⌃ E</kbd></span><span class="d">行頭 / 行末へ</span></div>
+      <div class="r"><span><kbd>⌃ U</kbd></span><span class="d">行頭まで消す</span></div>
+      <div class="r"><span><kbd>option</kbd>+クリック</span><span class="d">そこへカーソル移動</span></div>
+      <div class="r"><span><kbd>⌘ T</kbd> <kbd>⌘ W</kbd></span><span class="d">タブを開く / 閉じる</span></div>
+    </div>
+  </div>
+
+  <div class="col">
+    <div class="card">
+      <h2>📍 今どこ？・移動</h2>
+      <div class="r"><span><code>pwd</code></span><span class="d">今いるフォルダ</span></div>
+      <div class="r"><span><code>ls</code></span><span class="d">中身の一覧</span></div>
+      <div class="r"><span><code>ls -la</code></span><span class="d">隠しファイルも詳しく</span></div>
+      <div class="r"><span><code>cd フォルダ</code></span><span class="d">移動（Finderからドラッグ可）</span></div>
+      <div class="r"><span><code>cd ..</code></span><span class="d">1つ上へ</span></div>
+      <div class="r"><span><code>cd ~</code></span><span class="d">ホームへ</span></div>
+      <div class="r"><span><code>cd -</code></span><span class="d">直前の場所へ</span></div>
+      <div class="r"><span><code>open .</code></span><span class="d">Finderで開く</span></div>
+    </div>
+    <div class="card">
+      <h2>🔣 記号</h2>
+      <div class="r"><span><code>.</code>　<code>..</code></span><span class="d">今のフォルダ / 1つ上</span></div>
+      <div class="r"><span><code>~</code></span><span class="d">ホームフォルダ</span></div>
+      <div class="r"><span><code>*</code></span><span class="d">何でもいい文字列（*.pdf）</span></div>
+      <div class="r"><span><code>|</code></span><span class="d">結果を次のコマンドへ</span></div>
+      <div class="r"><span><code>&gt;</code>　<code>&gt;&gt;</code></span><span class="d">ファイルへ上書き / 追記</span></div>
+    </div>
+  </div>
+
+  <div class="col">
+    <div class="card">
+      <h2>📁 ファイル操作</h2>
+      <div class="r"><span><code>mkdir 名前</code></span><span class="d">フォルダを作る</span></div>
+      <div class="r"><span><code>touch 名前</code></span><span class="d">空のファイルを作る</span></div>
+      <div class="r"><span><code>cp 元 先</code></span><span class="d">コピー（フォルダは -r）</span></div>
+      <div class="r"><span><code>mv 元 先</code></span><span class="d">移動・名前を変える</span></div>
+      <div class="r good"><span><code>mv 名前 _trash/</code></span><span class="d">消す代わりにこれ</span></div>
+      <div class="r warn"><span><code>rm</code> <code>rm -r</code></span><span class="d">即削除・戻せない</span></div>
+      <div class="r warn"><span><code>sudo ...</code></span><span class="d">管理者で実行・慎重に</span></div>
+    </div>
+    <div class="card">
+      <h2>👀 中身を見る・編集</h2>
+      <div class="r"><span><code>cat 名前</code></span><span class="d">全部表示</span></div>
+      <div class="r"><span><code>less 名前</code></span><span class="d">1画面ずつ（q で終了）</span></div>
+      <div class="r"><span><code>head</code> <code>tail</code></span><span class="d">先頭 / 末尾10行</span></div>
+      <div class="r"><span><code>open -e 名前</code></span><span class="d">テキストエディットで開く</span></div>
+      <div class="r"><span><code>code .</code></span><span class="d">VS Codeで開く</span></div>
+    </div>
+  </div>
+
+  <div class="col">
+    <div class="card">
+      <h2>🔍 探す</h2>
+      <div class="r"><span style="grid-column: 1 / 3"><code>find . -name "*.pdf"</code></span></div>
+      <div class="r"><span class="d" style="grid-column: 1 / 3; border-top: none; padding-top: 0">　↑ 今のフォルダ以下から名前で探す</span></div>
+      <div class="r"><span><code>grep 文字 名前</code></span><span class="d">文字を含む行</span></div>
+      <div class="r"><span><code>grep -r 文字 .</code></span><span class="d">フォルダ内全部から</span></div>
+      <div class="r"><span><code>history</code></span><span class="d">過去のコマンド一覧</span></div>
+    </div>
+    <div class="card">
+      <h2>🌱 Git</h2>
+      <div class="r"><span><code>git status</code></span><span class="d">状態を確認</span></div>
+      <div class="r"><span><code>git add .</code></span><span class="d">変更を選ぶ</span></div>
+      <div class="r"><span><code>git commit -m "…"</code></span><span class="d">記録する</span></div>
+      <div class="r"><span><code>git push</code> / <code>pull</code></span><span class="d">送る / 取り込む</span></div>
+    </div>
+    <div class="card">
+      <h2>🍺 Homebrew ・ 💻 Mac</h2>
+      <div class="r"><span><code>brew install 名前</code></span><span class="d">ソフトを入れる</span></div>
+      <div class="r"><span><code>brew upgrade</code></span><span class="d">全部最新に</span></div>
+      <div class="r"><span><code>df -h</code></span><span class="d">ディスクの空き</span></div>
+      <div class="r"><span><code>du -sh 名前</code></span><span class="d">フォルダのサイズ</span></div>
+      <div class="r"><span><code>top</code></span><span class="d">CPU・メモリ使用量</span></div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

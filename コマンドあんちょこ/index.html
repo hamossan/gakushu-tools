@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="あんちょこ">
+<title>Macコマンドあんちょこ</title>
+<style>
+:root {
+  --bg: #faf7f8; --card: #ffffff; --text: #222; --sub: #666; --line: #eadde2;
+  --accent: #b0245a; --accent-soft: #fbe7ef; --code-bg: #f3eef0;
+  --danger: #c62828; --danger-soft: #fdecea; --star: #e0a100; --ok: #2e7d32;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #17151a; --card: #221f25; --text: #eee; --sub: #aaa; --line: #3a333d;
+    --accent: #f06a9b; --accent-soft: #3a2230; --code-bg: #2c2830;
+    --danger: #ff6b6b; --danger-soft: #3b2222; --star: #ffcc33; --ok: #7bd389;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", sans-serif;
+  font-size: 15px; line-height: 1.6;
+}
+header {
+  position: sticky; top: 0; z-index: 10; background: var(--accent); color: #fff;
+  padding: 10px 16px; box-shadow: 0 2px 6px rgba(0,0,0,.15);
+}
+header h1 { margin: 0 0 6px; font-size: 18px; }
+.controls { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+#q {
+  flex: 1 1 220px; padding: 8px 12px; border-radius: 8px; border: none; font-size: 16px;
+}
+.toggle { display: flex; align-items: center; gap: 4px; font-size: 14px; cursor: pointer; white-space: nowrap; }
+nav { display: flex; gap: 6px; overflow-x: auto; padding: 8px 16px; background: var(--card); border-bottom: 1px solid var(--line); }
+nav a {
+  flex: none; text-decoration: none; color: var(--accent); background: var(--accent-soft);
+  padding: 3px 10px; border-radius: 999px; font-size: 13px;
+}
+main { max-width: 960px; margin: 0 auto; padding: 12px 16px 60px; }
+section { background: var(--card); border: 1px solid var(--line); border-radius: 12px; margin: 14px 0; padding: 4px 14px 10px; scroll-margin-top: 130px; }
+section h2 { font-size: 17px; color: var(--accent); margin: 10px 0 2px; }
+section .lead { color: var(--sub); font-size: 13px; margin: 0 0 6px; }
+.row { display: grid; grid-template-columns: minmax(150px, 34%) 1fr; gap: 4px 14px; padding: 8px 0; border-top: 1px dashed var(--line); }
+.row:first-of-type { border-top: none; }
+.cmd { display: flex; align-items: flex-start; gap: 6px; flex-wrap: wrap; }
+code, kbd {
+  font-family: ui-monospace, Menlo, monospace; background: var(--code-bg);
+  padding: 2px 7px; border-radius: 6px; font-size: 14px; word-break: break-all;
+}
+kbd { border: 1px solid var(--line); border-bottom-width: 2px; }
+.copy {
+  border: 1px solid var(--line); background: transparent; color: var(--sub);
+  border-radius: 6px; font-size: 11px; padding: 1px 6px; cursor: pointer;
+}
+.copy.done { color: var(--ok); border-color: var(--ok); }
+.desc b { color: var(--accent); }
+.ex { color: var(--sub); font-size: 13px; margin-top: 2px; }
+.ex code { font-size: 12px; }
+.badge { font-size: 11px; padding: 0 6px; border-radius: 4px; white-space: nowrap; }
+.star { color: var(--star); }
+.danger { background: var(--danger-soft); color: var(--danger); border: 1px solid var(--danger); }
+.row.is-danger .desc { color: var(--text); }
+.row.is-danger { background: linear-gradient(90deg, var(--danger-soft), transparent 60%); }
+.tips { background: var(--accent-soft); border-radius: 10px; padding: 10px 14px; font-size: 14px; }
+.tips p { margin: 4px 0; }
+#empty { text-align: center; color: var(--sub); display: none; padding: 30px; }
+footer { color: var(--sub); font-size: 12px; text-align: center; }
+@media (max-width: 600px) {
+  .row { grid-template-columns: 1fr; }
+}
+@media print {
+  header, nav, .copy { display: none; }
+  section { break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>🐤 Macコマンドあんちょこ</h1>
+  <div class="controls">
+    <input id="q" type="search" placeholder="やりたいことで検索（例：コピー、消す、場所、止める）" autocomplete="off">
+    <label class="toggle"><input type="checkbox" id="onlyStar"> ★よく使うだけ</label>
+  </div>
+</header>
+<nav id="nav"></nav>
+<main>
+  <div class="tips">
+    <p><b>読み方</b>：<code>灰色の枠</code> はターミナルに打つ文字、<kbd>⌃</kbd> は control キー、<kbd>⌘</kbd> は command キー。</p>
+    <p><b>★</b> は最初に覚えたいもの。<span class="badge danger">注意</span> は元に戻せない操作なので、打つ前に一呼吸。</p>
+    <p>コマンドの後ろの <code>ファイル名</code> などは自分の名前に置き換える。打ち終わったら <kbd>return</kbd> で実行。</p>
+  </div>
+  <div id="list"></div>
+  <p id="empty">見つかりませんでした。別の言葉で探してみてください。</p>
+  <footer>参考：『macOS&amp;コマンドライン Quickリファレンス』（説明文は独自に作成）</footer>
+</main>
+
+<script>
+// s: ★よく使う / d: 注意（元に戻せない） / k: キー操作（コピーボタンなし）
+const DATA = [
+  { id: "trouble", title: "🆘 困ったとき", lead: "まずここを見る。だいたいこれで抜け出せる。", items: [
+    { k: "⌃ C", desc: "<b>止まらない・固まった</b>ときに強制終了。迷ったらまずこれ", s: 1 },
+    { k: "q", desc: "<b>画面いっぱいの表示</b>（man・less・git log など）から抜ける", s: 1 },
+    { k: "esc → :q! → return", desc: "<b>vim（vi）から出られない</b>とき。保存せずに抜ける", s: 1 },
+    { k: "⌃ C", desc: "<code>quote&gt;</code> や <code>&gt;</code> が出て入力待ちのまま → クォートの閉じ忘れ。⌃C でやり直し" },
+    { cmd: "clear", desc: "画面がごちゃごちゃしたので<b>表示をきれいにする</b>（<kbd>⌘ K</kbd> でも可）", s: 1 },
+    { cmd: "コマンド名 --help", desc: "<b>使い方を簡単に見る</b>。詳しくは <code>man コマンド名</code>（q で閉じる）" },
+    { k: "command not found", desc: "コマンド名の打ち間違い、またはインストールされていない" },
+    { k: "Permission denied", desc: "権限がない。むやみに <code>sudo</code> を付けず、本当に必要か確認する" },
+    { k: "No such file or directory", desc: "その場所にファイルがない。<code>pwd</code> と <code>ls</code> で今いる場所を確認" },
+  ]},
+  { id: "keys", title: "⌨️ 入力を楽にするキー", lead: "覚えると入力が一気に速くなる。", items: [
+    { k: "tab", desc: "<b>入力補完</b>。ファイル名やコマンドの途中で押すと続きを補ってくれる", s: 1 },
+    { k: "↑ / ↓", desc: "<b>前に打ったコマンドを呼び出す</b>", s: 1 },
+    { k: "⌃ R", desc: "過去のコマンドを<b>キーワードで検索</b>して呼び出す" },
+    { k: "⌃ A / ⌃ E", desc: "カーソルを<b>行頭 / 行末</b>へ移動" },
+    { k: "option + クリック", desc: "クリックした位置にカーソルを移動" },
+    { k: "option + ← / →", desc: "1単語ずつカーソル移動" },
+    { k: "⌃ U", desc: "カーソル位置から<b>行頭まで消す</b>（打ち直したいとき）" },
+    { k: "⌃ K", desc: "カーソル位置から行末まで消す" },
+    { k: "⌃ W", desc: "カーソルの左の1単語を消す" },
+    { k: "⌘ K", desc: "ターミナルの表示をすべてクリア" },
+    { k: "⌘ T / ⌘ N", desc: "新しいタブ / 新しいウィンドウを開く" },
+    { k: "⌘ W", desc: "今のタブ（ウィンドウ）を閉じる" },
+    { k: "⌘ + / ⌘ −", desc: "文字を大きく / 小さくする" },
+  ]},
+  { id: "where", title: "📍 今どこ？・移動する", lead: "ターミナルは常に「どこかのフォルダ」にいる。", items: [
+    { cmd: "pwd", desc: "<b>今いるフォルダ</b>（カレントディレクトリ）を表示", s: 1 },
+    { cmd: "ls", desc: "今いるフォルダの<b>中身を一覧</b>表示", s: 1 },
+    { cmd: "ls -la", desc: "隠しファイル（.で始まる）も含めて、<b>詳しく</b>一覧表示" },
+    { cmd: "cd フォルダ名", desc: "そのフォルダへ<b>移動</b>する", s: 1, ex: "フォルダを Finder からターミナルへドラッグすると場所が自動入力される" },
+    { cmd: "cd ..", desc: "<b>1つ上</b>のフォルダへ戻る", s: 1 },
+    { cmd: "cd ~", desc: "<b>ホームフォルダ</b>へ戻る（<code>cd</code> だけでも同じ）" },
+    { cmd: "cd -", desc: "<b>直前にいたフォルダ</b>へ戻る" },
+    { cmd: "open .", desc: "今いるフォルダを<b>Finderで開く</b>", s: 1 },
+    { cmd: "open ファイル名", desc: "ファイルを普段のアプリ（ダブルクリックと同じ）で開く" },
+  ]},
+  { id: "symbols", title: "🔣 記号の意味", lead: "コマンドの中によく出てくる記号。", items: [
+    { k: ".", desc: "今いるフォルダ" },
+    { k: "..", desc: "1つ上のフォルダ" },
+    { k: "~", desc: "ホームフォルダ（/Users/自分の名前）" },
+    { k: "/", desc: "フォルダの区切り。先頭の / は Mac 全体の一番上" },
+    { k: "*", desc: "何でもいい文字列（例：<code>ls *.pdf</code> で PDF だけ表示）" },
+    { k: "?", desc: "何でもいい1文字" },
+    { k: "|", desc: "左のコマンドの結果を右のコマンドに渡す（例：<code>ls | grep 2026</code>）" },
+    { k: ">", desc: "結果をファイルに<b>上書き</b>保存（例：<code>ls &gt; list.txt</code>）" },
+    { k: ">>", desc: "結果をファイルの末尾に<b>追記</b>" },
+    { k: "\"  \"", desc: "スペースを含む名前は \" \" で囲む（例：<code>cd \"Claude code\"</code>）" },
+  ]},
+  { id: "file", title: "📁 ファイル・フォルダを操作", items: [
+    { cmd: "mkdir フォルダ名", desc: "<b>フォルダを作る</b>", s: 1 },
+    { cmd: "mkdir -p a/b/c", desc: "途中のフォルダもまとめて作る" },
+    { cmd: "touch ファイル名", desc: "<b>空のファイルを作る</b>" },
+    { cmd: "cp 元 先", desc: "ファイルを<b>コピー</b>", s: 1, ex: "例：<code>cp memo.txt memo_bak.txt</code>" },
+    { cmd: "cp -r 元フォルダ 先", desc: "フォルダを中身ごとコピー" },
+    { cmd: "mv 元 先", desc: "ファイルを<b>移動</b>、または<b>名前を変更</b>", s: 1, ex: "例：<code>mv a.txt b.txt</code>（名前変更）／ <code>mv a.txt ~/Desktop/</code>（移動）" },
+    { cmd: "mv ファイル名 _trash/", desc: "<b>消す代わりに _trash へ移動</b>（このMacのルール。後で戻せる）", s: 1 },
+    { cmd: "rm ファイル名", desc: "ファイルを削除。<b>ゴミ箱に入らず即消える</b>", d: 1 },
+    { cmd: "rm -r フォルダ名", desc: "フォルダを中身ごと削除。<b>取り返しがつかない</b>", d: 1 },
+    { cmd: "rmdir フォルダ名", desc: "空のフォルダだけ削除（中身があると失敗するので安全）" },
+    { cmd: "ln -s 元 リンク名", desc: "シンボリックリンク（エイリアスのようなもの）を作る" },
+  ]},
+  { id: "view", title: "👀 ファイルの中身を見る・編集する", items: [
+    { cmd: "cat ファイル名", desc: "中身を<b>全部表示</b>（短いファイル向け）", s: 1 },
+    { cmd: "less ファイル名", desc: "長いファイルを<b>1画面ずつ</b>表示。space で次、<kbd>q</kbd> で終了", s: 1 },
+    { cmd: "head ファイル名", desc: "先頭10行だけ表示（<code>head -3</code> で3行）" },
+    { cmd: "tail ファイル名", desc: "末尾10行だけ表示" },
+    { cmd: "tail -f ファイル名", desc: "末尾を表示し続ける（ログの監視）。⌃C で終了" },
+    { cmd: "wc -l ファイル名", desc: "<b>行数</b>を数える" },
+    { cmd: "open -e ファイル名", desc: "<b>テキストエディット</b>で開く（いちばん簡単な編集方法）", s: 1 },
+    { cmd: "code ファイル名", desc: "<b>VS Code</b>で開く（<code>code .</code> でフォルダごと）" },
+    { cmd: "nano ファイル名", desc: "ターミナル内で編集。下に操作が出る。⌃O 保存、⌃X 終了" },
+    { cmd: "diff A B", desc: "2つのファイルの<b>違う所</b>を表示" },
+  ]},
+  { id: "search", title: "🔍 探す", items: [
+    { cmd: "find . -name \"*.pdf\"", desc: "今のフォルダ以下から<b>名前でファイルを探す</b>", s: 1 },
+    { cmd: "mdfind キーワード", desc: "<b>Spotlight</b>でMac全体を検索（速い）" },
+    { cmd: "grep 文字 ファイル名", desc: "ファイルの中から<b>その文字を含む行</b>を探す", s: 1 },
+    { cmd: "grep -r 文字 .", desc: "フォルダ内のファイル全部から探す" },
+    { cmd: "grep -i 文字 ファイル名", desc: "大文字・小文字を区別せず探す" },
+    { cmd: "which コマンド名", desc: "そのコマンドの<b>本体の場所</b>を表示（入っているかの確認にも）" },
+    { cmd: "history", desc: "<b>過去に打ったコマンド</b>の一覧" },
+  ]},
+  { id: "zip", title: "🗜 圧縮・解凍", items: [
+    { cmd: "zip -r 名前.zip フォルダ", desc: "フォルダを<b>zipに圧縮</b>", s: 1 },
+    { cmd: "unzip ファイル.zip", desc: "zipを<b>解凍</b>" },
+    { cmd: "tar -czvf 名前.tar.gz フォルダ", desc: "tar.gz 形式で圧縮" },
+    { cmd: "tar -xvf ファイル.tar.gz", desc: "tar.gz / tar を展開" },
+  ]},
+  { id: "system", title: "💻 Macの情報・状態", items: [
+    { cmd: "sw_vers", desc: "<b>macOSのバージョン</b>を表示" },
+    { cmd: "arch", desc: "CPUの種類（arm64 なら Apple シリコン）" },
+    { cmd: "df -h", desc: "<b>ディスクの空き容量</b>を表示" },
+    { cmd: "du -sh フォルダ", desc: "そのフォルダの<b>合計サイズ</b>" },
+    { cmd: "top", desc: "動いているアプリの<b>CPU・メモリ使用量</b>をリアルタイム表示（q で終了）" },
+    { cmd: "ps aux | grep 名前", desc: "その名前のプロセス（動いているプログラム）を探す" },
+    { cmd: "kill 番号", desc: "プロセス番号（PID）を指定して終了させる" },
+    { cmd: "killall アプリ名", desc: "名前を指定して終了させる（例：<code>killall Finder</code> で再起動）" },
+    { cmd: "date", desc: "今の日時を表示" },
+    { cmd: "whoami", desc: "自分のユーザー名を表示" },
+    { cmd: "caffeinate", desc: "実行中は<b>スリープしない</b>（⌃C で解除）" },
+    { cmd: "pbcopy < ファイル名", desc: "ファイルの中身を<b>クリップボードにコピー</b>（<code>pbpaste</code> で貼り付け）" },
+    { cmd: "say こんにちは", desc: "Macが読み上げる" },
+  ]},
+  { id: "admin", title: "⚠️ 管理者権限・再起動", lead: "sudo は「管理者として実行」。パスワードを聞かれる（打っても画面に出ないが入力されている）。", items: [
+    { cmd: "sudo コマンド", desc: "管理者権限で実行。<b>本当に必要なときだけ</b>", d: 1 },
+    { cmd: "sudo shutdown -r now", desc: "今すぐ再起動", d: 1 },
+    { cmd: "sudo shutdown -h now", desc: "今すぐシステム終了", d: 1 },
+    { cmd: "softwareupdate -l", desc: "使えるソフトウェアアップデートを一覧表示" },
+  ]},
+  { id: "net", title: "🌐 ネットワーク", items: [
+    { cmd: "ping -c 3 google.com", desc: "<b>ネットにつながっているか</b>確認（3回送って終了）", s: 1 },
+    { cmd: "curl -O URL", desc: "URLのファイルを<b>ダウンロード</b>" },
+    { cmd: "curl -L URL", desc: "URLの中身を表示（転送先も追いかける）" },
+    { cmd: "nslookup ドメイン", desc: "ドメインのIPアドレスを調べる" },
+    { cmd: "ipconfig getifaddr en0", desc: "自分のMacの（Wi-Fiの）IPアドレス" },
+    { cmd: "ssh ユーザー名@接続先", desc: "別のコンピュータに接続。<code>exit</code> で切断" },
+  ]},
+  { id: "brew", title: "🍺 Homebrew（アプリの追加）", lead: "ターミナル用ソフトのインストール係。", items: [
+    { cmd: "brew install 名前", desc: "ソフトを<b>インストール</b>", s: 1 },
+    { cmd: "brew search 名前", desc: "ソフトを探す" },
+    { cmd: "brew info 名前", desc: "ソフトの情報を見る" },
+    { cmd: "brew list", desc: "インストール済みの一覧" },
+    { cmd: "brew update && brew upgrade", desc: "Homebrew 本体と<b>全ソフトを最新に</b>" },
+    { cmd: "brew uninstall 名前", desc: "ソフトを削除" },
+    { cmd: "brew doctor", desc: "Homebrew の調子を診断" },
+  ]},
+  { id: "git", title: "🌱 Git（変更の記録）", lead: "基本の流れ：status で確認 → add → commit → push", items: [
+    { cmd: "git status", desc: "<b>今の状態</b>（変更されたファイル）を確認", s: 1 },
+    { cmd: "git add ファイル名", desc: "記録する変更を選ぶ（<code>git add .</code> で全部）" },
+    { cmd: "git commit -m \"メッセージ\"", desc: "選んだ変更を<b>記録</b>する" },
+    { cmd: "git push", desc: "記録をGitHubなどへ<b>送る</b>" },
+    { cmd: "git pull", desc: "GitHubなどの最新を<b>取り込む</b>" },
+    { cmd: "git log --oneline -5", desc: "最近5件の記録を1行ずつ表示" },
+    { cmd: "git diff", desc: "まだ記録していない変更の中身を見る" },
+    { cmd: "git clone URL", desc: "リポジトリを丸ごと手元に複製" },
+    { cmd: "git switch ブランチ名", desc: "ブランチを切り替える" },
+  ]},
+  { id: "vim", title: "📝 vim に入ってしまったら", lead: "git commit などで突然開くことがある。左下に何も出ていない状態が「普通モード」。", items: [
+    { k: "esc", desc: "まず押す。とにかく<b>普通モードに戻る</b>", s: 1 },
+    { k: ":q!", desc: "<b>保存せず終了</b>（入力後 return）", s: 1 },
+    { k: ":wq", desc: "<b>保存して終了</b>（入力後 return）", s: 1 },
+    { k: "i", desc: "文字を入力するモードに入る（esc で戻る）" },
+    { k: "u", desc: "直前の操作を取り消す" },
+    { k: "dd", desc: "カーソルのある行を削除" },
+    { k: "/文字", desc: "その文字を検索（n で次へ）" },
+  ]},
+  { id: "python", title: "🐍 Python", items: [
+    { cmd: "python3 ファイル名.py", desc: "Pythonのプログラムを実行" },
+    { cmd: "python3 -m venv .venv", desc: "仮想環境（専用の作業場）を作る" },
+    { cmd: "source .venv/bin/activate", desc: "仮想環境に入る（<code>deactivate</code> で出る）" },
+    { cmd: "python3 -m http.server", desc: "今のフォルダを簡易Webサーバーで公開（⌃C で停止）" },
+  ]},
+];
+
+const listEl = document.getElementById("list");
+const navEl = document.getElementById("nav");
+const esc = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+const plain = html => html.replace(/<[^>]+>/g, "").replace(/&gt;/g, ">").replace(/&lt;/g, "<").replace(/&amp;/g, "&");
+
+function render() {
+  navEl.innerHTML = DATA.map(c => `<a href="#${c.id}">${c.title}</a>`).join("");
+  listEl.innerHTML = DATA.map(c => `
+    <section id="${c.id}">
+      <h2>${c.title}</h2>
+      ${c.lead ? `<p class="lead">${c.lead}</p>` : ""}
+      ${c.items.map(it => {
+        const head = it.cmd
+          ? `<code>${esc(it.cmd)}</code><button class="copy" data-cmd="${esc(it.cmd)}">コピー</button>`
+          : `<kbd>${esc(it.k)}</kbd>`;
+        const badges = (it.s ? `<span class="badge star">★</span>` : "") + (it.d ? `<span class="badge danger">注意</span>` : "");
+        const text = [it.cmd || it.k, plain(it.desc), it.ex ? plain(it.ex) : "", c.title].join(" ").toLowerCase();
+        return `<div class="row${it.d ? " is-danger" : ""}" data-text="${esc(text)}" data-star="${it.s ? 1 : 0}">
+          <div class="cmd">${head}${badges}</div>
+          <div class="desc">${it.desc}${it.ex ? `<div class="ex">${it.ex}</div>` : ""}</div>
+        </div>`;
+      }).join("")}
+    </section>`).join("");
+}
+
+function filter() {
+  const words = document.getElementById("q").value.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  const onlyStar = document.getElementById("onlyStar").checked;
+  let any = false;
+  document.querySelectorAll("section").forEach(sec => {
+    let shown = 0;
+    sec.querySelectorAll(".row").forEach(row => {
+      const ok = words.every(w => row.dataset.text.includes(w)) && (!onlyStar || row.dataset.star === "1");
+      row.style.display = ok ? "" : "none";
+      if (ok) shown++;
+    });
+    sec.style.display = shown ? "" : "none";
+    if (shown) any = true;
+  });
+  document.getElementById("empty").style.display = any ? "none" : "block";
+}
+
+render();
+document.getElementById("q").addEventListener("input", filter);
+document.getElementById("onlyStar").addEventListener("change", filter);
+listEl.addEventListener("click", e => {
+  const btn = e.target.closest(".copy");
+  if (!btn) return;
+  navigator.clipboard.writeText(btn.dataset.cmd).then(() => {
+    btn.textContent = "コピー済";
+    btn.classList.add("done");
+    setTimeout(() => { btn.textContent = "コピー"; btn.classList.remove("done"); }, 1200);
+  });
+});
+// "/" キーで検索欄へ
+document.addEventListener("keydown", e => {
+  if (e.key === "/" && document.activeElement.id !== "q") { e.preventDefault(); document.getElementById("q").focus(); }
+});
+</script>
+</body>
+</html>
