@@ -62,7 +62,6 @@
   #mode-carry { background: #2e8b57; }
   #mode-sub { background: #4a90d9; }
   #mode-borrow { background: #2f6fa8; }
-  #mode-ten { background: #e08a3c; }
   #mode-mult { background: #8e6fce; }
 
   /* --- かけざん段選択・順序選択画面 --- */
@@ -173,7 +172,6 @@
     <button class="mode-btn" id="mode-carry">くりあがり たしざん</button>
     <button class="mode-btn" id="mode-sub">ひきざん</button>
     <button class="mode-btn" id="mode-borrow">くりさがり ひきざん</button>
-    <button class="mode-btn" id="mode-ten">10のなかよし（□+◯=10）</button>
     <button class="mode-btn" id="mode-mult">かけざん</button>
   </div>
 
@@ -300,15 +298,6 @@
     return shuffle(cards);
   }
 
-  function buildTenDeck() {
-    const cards = [];
-    for (let a = 0; a <= 10; a++) {
-      const b = 10 - a;
-      cards.push({ text: `10 = ${a} + ？`, answer: b });
-    }
-    return shuffle(cards);
-  }
-
   function buildMultDeck(dan, ordered) {
     const cards = [];
     if (dan === 'total') {
@@ -390,7 +379,6 @@
   document.getElementById('mode-carry').addEventListener('click', () => startMode(buildCarryAddDeck));
   document.getElementById('mode-sub').addEventListener('click', () => startMode(buildSubDeck));
   document.getElementById('mode-borrow').addEventListener('click', () => startMode(buildBorrowSubDeck));
-  document.getElementById('mode-ten').addEventListener('click', () => startMode(buildTenDeck));
   document.getElementById('mode-mult').addEventListener('click', () => showScreen(multDanScreen));
   document.getElementById('order-sequential').addEventListener('click', () => startMode(() => buildMultDeck(pendingDan, true)));
   document.getElementById('order-random').addEventListener('click', () => startMode(() => buildMultDeck(pendingDan, false)));
