@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>Claude Code あんちょこ壁紙</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* 1512×982（MacBook Pro 14インチ）を基準に作り、2倍で書き出して 3024×1964 にする */
+:root {
+  --bg: #111614; --bg2: #16201c; --fg: #e3eae6; --muted: #8b9a93; --line: #26312c;
+  --accent: #5fcbb1; --key-bg: #1f2925; --key-edge: #36443e; --star: #f0a066;
+  --font-body: "Zen Kaku Gothic New", "IPAGothic", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+}
+body.light {
+  --bg: #eef1ee; --bg2: #e4e9e5; --fg: #18211d; --muted: #5b6862; --line: #cfd7d2;
+  --accent: #0d6a58; --key-bg: #ffffff; --key-edge: #b9c3bd; --star: #b4561c;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  width: 1512px; height: 982px; overflow: hidden;
+  background: radial-gradient(ellipse 80% 90% at 20% 30%, var(--bg2), var(--bg) 70%);
+  color: var(--fg); font-family: var(--font-body);
+  padding: 58px 44px 96px; /* 上: メニューバーとノッチ / 下: Dock */
+  display: flex; flex-direction: column; justify-content: center; gap: 28px;
+}
+header { display: flex; align-items: baseline; gap: 18px; }
+h1 { margin: 0; font-size: 32px; font-weight: 900; letter-spacing: 0.01em; }
+h1 .p { font-family: var(--font-mono); color: var(--accent); margin-right: 10px; }
+header span { color: var(--muted); font-size: 14px; }
+.grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 30px; }
+.col { display: flex; flex-direction: column; gap: 26px; }
+section { display: grid; grid-template-columns: max-content 1fr; gap: 9px 14px; align-items: baseline; }
+section h2 { grid-column: 1 / -1; }
+h2 {
+  margin: 0 0 2px; font-size: 13px; font-weight: 700; letter-spacing: 0.14em; color: var(--accent);
+  padding-bottom: 6px; border-bottom: 1px solid var(--line);
+}
+.r { display: contents; }
+.r > span { font-size: 15.5px; line-height: 1.4; }
+.r > :first-child { justify-self: start; }
+kbd, code {
+  font-family: var(--font-mono); font-size: 13px; font-weight: 700; color: var(--fg);
+  background: var(--key-bg); border: 1px solid var(--key-edge); border-bottom-width: 2px;
+  border-radius: 6px; padding: 1px 7px; white-space: nowrap;
+}
+code { border-bottom-width: 1px; font-weight: 500; color: var(--accent); background: transparent; border-color: transparent; padding-left: 0; }
+.s { color: var(--star); font-weight: 700; }
+small { display: block; color: var(--muted); font-size: 13px; }
+</style>
+</head>
+<body>
+<header>
+  <h1><span class="p">&gt;</span>Claude Code あんちょこ</h1>
+  <span><span class="s">★</span> 定番　／　<kbd>/</kbd> で一覧　<kbd>?</kbd> でショートカット表示</span>
+</header>
+
+<div class="grid">
+  <div class="col">
+    <section>
+      <h2>入力</h2>
+      <div class="r"><kbd>/</kbd><span><span class="s">★</span>コマンド一覧</span></div>
+      <div class="r"><kbd>@</kbd><span><span class="s">★</span>ファイルを指定</span></div>
+      <div class="r"><kbd>!</kbd><span><span class="s">★</span>シェルを直接実行</span></div>
+      <div class="r"><kbd>Shift+Enter</kbd><span><span class="s">★</span>改行</span></div>
+      <div class="r"><kbd>Ctrl+V</kbd><span>画像を貼る</span></div>
+      <div class="r"><kbd>Ctrl+G</kbd><span>エディタで長文を書く</span></div>
+    </section>
+    <section>
+      <h2>権限モード（Shift+Tab）</h2>
+      <div class="r"><code>default</code><span>毎回確認</span></div>
+      <div class="r"><code>acceptEdits</code><span>編集は自動でOK</span></div>
+      <div class="r"><code>plan</code><span>読むだけ・計画を出す</span></div>
+      <div class="r"><code>auto</code><span>安全な操作は自動</span></div>
+    </section>
+  </div>
+
+  <div class="col">
+    <section>
+      <h2>キー操作</h2>
+      <div class="r"><kbd>Esc</kbd><span><span class="s">★</span>Claude を止める</span></div>
+      <div class="r"><kbd>Esc Esc</kbd><span><span class="s">★</span>巻き戻し</span></div>
+      <div class="r"><kbd>Shift+Tab</kbd><span><span class="s">★</span>権限モード切替</span></div>
+      <div class="r"><kbd>Ctrl+C</kbd><span>中断／入力を消す</span></div>
+      <div class="r"><kbd>Ctrl+D</kbd><span>終了（2回）</span></div>
+      <div class="r"><kbd>↑ ↓</kbd><span>入力履歴</span></div>
+      <div class="r"><kbd>Ctrl+R</kbd><span>履歴を検索</span></div>
+      <div class="r"><kbd>Ctrl+S</kbd><span>書きかけを退避／戻す</span></div>
+      <div class="r"><kbd>Ctrl+O</kbd><span>詳細表示</span></div>
+      <div class="r"><kbd>Ctrl+T</kbd><span>ToDo を表示</span></div>
+      <div class="r"><kbd>Ctrl+B</kbd><span>実行中を裏に回す</span></div>
+      <div class="r"><kbd>Option+P</kbd><span>モデル切替</span></div>
+      <div class="r"><kbd>Ctrl+L</kbd><span>画面を描き直す</span></div>
+    </section>
+  </div>
+
+  <div class="col">
+    <section>
+      <h2>会話の管理</h2>
+      <div class="r"><code>/clear</code><span><span class="s">★</span>リセットして新規</span></div>
+      <div class="r"><code>/compact</code><span><span class="s">★</span>要約して文脈を空ける</span></div>
+      <div class="r"><code>/resume</code><span><span class="s">★</span>過去の会話を再開</span></div>
+      <div class="r"><code>/rewind</code><span><span class="s">★</span>前の時点に戻す</span></div>
+      <div class="r"><code>/context</code><span>文脈の使用量</span></div>
+      <div class="r"><code>/btw</code><span>会話に残さず質問</span></div>
+      <div class="r"><code>/rename</code><span>会話に名前を付ける</span></div>
+      <div class="r"><code>/copy</code><span>最後の返答をコピー</span></div>
+    </section>
+    <section>
+      <h2>作業</h2>
+      <div class="r"><code>/plan</code><span><span class="s">★</span>計画モードで始める</span></div>
+      <div class="r"><code>/init</code><span><span class="s">★</span>CLAUDE.md を作る</span></div>
+      <div class="r"><code>/memory</code><span><span class="s">★</span>CLAUDE.md を編集</span></div>
+      <div class="r"><code>/diff</code><span>変更を確認</span></div>
+      <div class="r"><code>/code-review</code><span>変更をレビュー</span></div>
+      <div class="r"><code>/tasks</code><span>裏の作業を見る</span></div>
+    </section>
+  </div>
+
+  <div class="col">
+    <section>
+      <h2>設定・確認</h2>
+      <div class="r"><code>/model</code><span><span class="s">★</span>モデルを選ぶ</span></div>
+      <div class="r"><code>/usage</code><span><span class="s">★</span>使用量・上限</span></div>
+      <div class="r"><code>/effort</code><span>考える深さ</span></div>
+      <div class="r"><code>/permissions</code><span>許可ルール</span></div>
+      <div class="r"><code>/config</code><span>設定画面</span></div>
+      <div class="r"><code>/doctor</code><span>不具合を診断</span></div>
+      <div class="r"><code>/mcp</code><span>MCP を管理</span></div>
+    </section>
+    <section>
+      <h2>ターミナルから</h2>
+      <div class="r"><code>claude</code><span><span class="s">★</span>対話を始める</span></div>
+      <div class="r"><code>claude -c</code><span><span class="s">★</span>直前の会話を続ける</span></div>
+      <div class="r"><code>claude -r</code><span><span class="s">★</span>会話を選んで再開</span></div>
+      <div class="r"><code>claude -p "…"</code><span>一発で答えて終了</span></div>
+      <div class="r"><code>claude update</code><span>最新版に更新</span></div>
+    </section>
+  </div>
+</div>
+</body>
+</html>

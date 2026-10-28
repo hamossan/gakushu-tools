@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Claude Code">
+<title>Claude Code あんちょこ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: 端末のキーキャップ風。上に検索と分類チップ、下に「キー → 意味」の行を分類ごとに並べる一列リスト */
+:root {
+  --bg: #eef1ee;
+  --surface: #fbfcfb;
+  --fg: #18211d;
+  --muted: #5b6862;
+  --line: #d3dad5;
+  --accent: #0d6a58;
+  --accent-soft: #d7ebe4;
+  --key-bg: #ffffff;
+  --key-edge: #b9c3bd;
+  --star: #b4561c;
+  --font-body: "Zen Kaku Gothic New", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111614; --surface: #18201c; --fg: #e3eae6; --muted: #92a29a; --line: #2a3530;
+    --accent: #5fcbb1; --accent-soft: #1c332c; --key-bg: #222c27; --key-edge: #3a4842; --star: #f0a066;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111614; --surface: #18201c; --fg: #e3eae6; --muted: #92a29a; --line: #2a3530;
+  --accent: #5fcbb1; --accent-soft: #1c332c; --key-bg: #222c27; --key-edge: #3a4842; --star: #f0a066;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 20px 48px;
+}
+body::before {
+  content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px);
+  z-index: 10; background: var(--bg);
+}
+.wrap { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+
+header { display: flex; flex-direction: column; gap: 4px; }
+header h1 {
+  margin: 0; font-size: 26px; font-weight: 900; letter-spacing: 0.01em; text-wrap: balance;
+}
+header h1 .prompt { font-family: var(--font-mono); color: var(--accent); margin-right: 6px; }
+header p { margin: 0; color: var(--muted); font-size: 13px; }
+
+.bar {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+  background: var(--bg);
+  display: flex; flex-direction: column; gap: 10px;
+  padding-block: 8px 10px;
+  border-bottom: 1px solid var(--line);
+}
+.search {
+  width: 100%; font: inherit; font-size: 16px;
+  padding: 10px 12px; border-radius: 10px;
+  border: 1px solid var(--key-edge); background: var(--surface); color: var(--fg);
+}
+.search:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.chips { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+.chips::-webkit-scrollbar { display: none; }
+.chip {
+  flex: none; font: inherit; font-size: 13px; font-weight: 500;
+  padding: 5px 12px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface); color: var(--muted);
+  cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+.chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+section { display: flex; flex-direction: column; gap: 8px; }
+section h2 {
+  margin: 0; font-size: 13px; font-weight: 700; letter-spacing: 0.08em;
+  color: var(--accent); display: flex; align-items: baseline; gap: 8px;
+}
+section h2 small { color: var(--muted); font-weight: 400; letter-spacing: 0; font-size: 12px; }
+.list {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+  display: flex; flex-direction: column;
+}
+.row {
+  display: grid; grid-template-columns: minmax(0, 11.5em) minmax(0, 1fr); gap: 4px 14px;
+  padding: 10px 14px; border-top: 1px solid var(--line); align-items: baseline;
+}
+.row:first-child { border-top: 0; }
+.keys { display: flex; flex-wrap: wrap; gap: 4px; align-items: baseline; min-width: 0; }
+kbd, code {
+  font-family: var(--font-mono); font-size: 13px; font-weight: 700;
+  background: var(--key-bg); border: 1px solid var(--key-edge); border-bottom-width: 2px;
+  border-radius: 6px; padding: 1px 6px; color: var(--fg); white-space: nowrap;
+}
+code { border-bottom-width: 1px; font-weight: 500; white-space: normal; overflow-wrap: anywhere; }
+.keys .or { color: var(--muted); font-size: 12px; }
+.desc { min-width: 0; }
+.desc .star { color: var(--star); font-weight: 700; margin-right: 4px; }
+.desc .note { display: block; color: var(--muted); font-size: 12.5px; line-height: 1.5; }
+.empty { color: var(--muted); text-align: center; padding: 24px 0; }
+footer { color: var(--muted); font-size: 12px; display: flex; flex-direction: column; gap: 4px; }
+footer a { color: var(--accent); }
+
+@media (max-width: 480px) {
+  .row { grid-template-columns: minmax(0, 1fr); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .chip { transition: background-color .15s, color .15s; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <h1><span class="prompt">&gt;</span>Claude Code あんちょこ</h1>
+    <p>★ はまず覚えたい定番。2026年10月時点の公式ドキュメントで確認。</p>
+  </header>
+
+  <div class="bar">
+    <input id="q" class="search" type="search" placeholder="検索（例: 戻す、モデル、ctrl）" autocomplete="off" aria-label="コマンドを検索">
+    <div class="chips" id="chips" role="group" aria-label="分類で絞り込み"></div>
+  </div>
+
+  <main id="out"></main>
+
+  <footer>
+    <span>コマンドは <code>/</code> を打つと一覧と絞り込みが出る。<code>?</code>（空欄で）でショートカット一覧。</span>
+    <span>出典: <a href="https://code.claude.com/docs/en/commands" target="_blank" rel="noopener">Commands</a> ・ <a href="https://code.claude.com/docs/en/interactive-mode" target="_blank" rel="noopener">Interactive mode</a> ・ <a href="https://code.claude.com/docs/en/cli-reference" target="_blank" rel="noopener">CLI reference</a></span>
+  </footer>
+</div>
+
+<script>
+// k: キー（配列は「または」で並べる）／d: 意味／n: 補足／s: ★
+const DATA = [
+  { id: "input", title: "入力のコツ", sub: "プロンプト欄で", items: [
+    { k: ["/"], d: "コマンド・スキルの一覧を出す", n: "続けて文字を打つと絞り込み。Tab で確定", s: 1 },
+    { k: ["@"], d: "ファイルを指定して読ませる", n: "@src/app.ts のようにパスを補完", s: 1 },
+    { k: ["!"], d: "シェルコマンドを直接実行", n: "!git status → 結果ごと Claude に渡る", s: 1 },
+    { k: ["?"], d: "ショートカット一覧を表示", n: "入力欄が空のときだけ" },
+    { k: ["Shift+Enter", "\\ + Enter"], d: "改行（送信しない）", n: "効かない端末は /terminal-setup", s: 1 },
+    { k: ["Ctrl+V"], d: "画像を貼り付け", n: "スクショをそのまま見せられる。iTerm2 は Cmd+V" },
+    { k: ["Ctrl+G"], d: "長文をエディタで書く", n: "$EDITOR が開く。保存して閉じると入力欄へ" },
+  ]},
+  { id: "keys", title: "キー操作", sub: "作業中に", items: [
+    { k: ["Esc"], d: "Claude を止める", n: "ここまでの作業は残る。指示を出し直せる", s: 1 },
+    { k: ["Esc Esc"], d: "巻き戻しメニュー", n: "入力欄が空のとき。会話・コードを前の時点へ", s: 1 },
+    { k: ["Shift+Tab"], d: "権限モードを切替", n: "通常 → 編集自動OK → plan → auto …", s: 1 },
+    { k: ["Ctrl+C"], d: "中断／入力を消す", n: "何も動いていなければ2回で終了" },
+    { k: ["Ctrl+D"], d: "終了", n: "2回押し" },
+    { k: ["↑", "↓"], d: "前に送った入力を呼び出す" },
+    { k: ["Ctrl+R"], d: "入力履歴を検索" },
+    { k: ["Ctrl+S"], d: "書きかけを一時退避／戻す", n: "急ぎの質問を先に送りたいとき" },
+    { k: ["Ctrl+O"], d: "詳細表示（ツールの中身）を切替" },
+    { k: ["Ctrl+T"], d: "Claude の ToDo リストを表示/非表示" },
+    { k: ["Ctrl+B"], d: "実行中のコマンドを裏に回す", n: "長いビルドやサーバーを動かしたまま会話" },
+    { k: ["Alt+P"], d: "モデルを切替", n: "Mac は Option+P" },
+    { k: ["Alt+O"], d: "fast モードを切替", n: "Mac は Option+O" },
+    { k: ["Ctrl+L"], d: "画面を描き直す", n: "表示が崩れたとき" },
+    { k: ["Ctrl+_"], d: "入力の編集を元に戻す" },
+  ]},
+  { id: "session", title: "会話の管理", sub: "スラッシュコマンド", items: [
+    { k: ["/clear"], d: "会話をリセットして新しく始める", n: "話題が変わったら。前の会話は /resume で戻れる", s: 1 },
+    { k: ["/compact"], d: "会話を要約して文脈を空ける", n: "/compact テストの話を残して のように指示も可", s: 1 },
+    { k: ["/resume"], d: "過去の会話を選んで再開", s: 1 },
+    { k: ["/rewind"], d: "会話・コードを前の時点に戻す", n: "Esc Esc と同じ。別名 /undo", s: 1 },
+    { k: ["/context"], d: "文脈の使用量をマス目で表示", n: "重くなってきたか確認" },
+    { k: ["/btw"], d: "会話に残さず横から質問", n: "/btw この関数名なんだっけ" },
+    { k: ["/branch"], d: "今の会話を分岐して別案を試す" },
+    { k: ["/rename"], d: "会話に名前を付ける", n: "あとで /resume や claude -r で探しやすい" },
+    { k: ["/copy"], d: "最後の返答をクリップボードへ", n: "/copy 2 で2つ前" },
+    { k: ["/export"], d: "会話をテキストで書き出す" },
+    { k: ["/recap"], d: "この会話を一行で要約" },
+  ]},
+  { id: "work", title: "作業を進める", sub: "スラッシュコマンド", items: [
+    { k: ["/plan"], d: "計画モードで始める", n: "/plan ログイン不具合を直す。読むだけで計画を出す", s: 1 },
+    { k: ["/init"], d: "プロジェクト用 CLAUDE.md を作る", n: "最初に一度", s: 1 },
+    { k: ["/memory"], d: "CLAUDE.md や自動メモリを編集", s: 1 },
+    { k: ["/diff"], d: "ここまでの変更を一覧で確認" },
+    { k: ["/code-review"], d: "変更をレビュー", n: "別名 /review。--fix で直すところまで" },
+    { k: ["/security-review"], d: "変更のセキュリティ確認" },
+    { k: ["/simplify"], d: "変更したコードを整理" },
+    { k: ["/add-dir"], d: "別フォルダも触れるようにする" },
+    { k: ["/tasks"], d: "裏で動いている作業を見る・止める" },
+    { k: ["/loop"], d: "同じ指示を間隔をあけて繰り返す", n: "/loop 5m デプロイ状況を見て" },
+    { k: ["/goal"], d: "条件を満たすまで続けさせる" },
+  ]},
+  { id: "settings", title: "設定・確認", sub: "スラッシュコマンド", items: [
+    { k: ["/model"], d: "モデルを選ぶ", n: "左右キーで effort も調整", s: 1 },
+    { k: ["/usage"], d: "使用量・上限・費用を見る", n: "/cost /stats も同じ", s: 1 },
+    { k: ["/effort"], d: "考える深さを設定", n: "low 〜 max、auto" },
+    { k: ["/fast"], d: "fast モードのオン/オフ" },
+    { k: ["/permissions"], d: "許可・拒否ルールを管理", n: "毎回聞かれるコマンドを許可しておく" },
+    { k: ["/config"], d: "設定画面（テーマ、エディタモードなど）" },
+    { k: ["/status"], d: "バージョン・アカウント・接続を確認" },
+    { k: ["/doctor"], d: "インストールや設定の不具合を診断" },
+    { k: ["/mcp"], d: "MCP サーバーの接続を管理" },
+    { k: ["/skills"], d: "使えるスキルの一覧" },
+    { k: ["/hooks"], d: "フックの設定を見る" },
+    { k: ["/plugin"], d: "プラグインを入れる・管理" },
+    { k: ["/statusline"], d: "ステータスラインを設定" },
+    { k: ["/terminal-setup"], d: "Shift+Enter 改行を有効にする" },
+    { k: ["/help"], d: "ヘルプとコマンド一覧" },
+  ]},
+  { id: "cli", title: "ターミナルから起動", sub: "シェルで打つ", items: [
+    { k: ["claude"], d: "対話を始める", s: 1 },
+    { k: ["claude -c"], d: "このフォルダの直前の会話を続ける", s: 1 },
+    { k: ["claude -r"], d: "会話を選んで再開", n: "claude -r \"名前\" で直接", s: 1 },
+    { k: ["claude \"…\""], d: "最初の指示を付けて始める" },
+    { k: ["claude -p \"…\""], d: "一発で答えを出して終了", n: "cat log.txt | claude -p \"要約して\"" },
+    { k: ["--model"], d: "モデルを指定して起動", n: "claude --model opus" },
+    { k: ["--permission-mode plan"], d: "計画モードで起動" },
+    { k: ["-n"], d: "会話名を付けて起動" },
+    { k: ["claude update"], d: "最新版に更新" },
+    { k: ["claude mcp"], d: "MCP サーバーを追加・管理" },
+  ]},
+  { id: "modes", title: "権限モード", sub: "Shift+Tab で切替", items: [
+    { k: ["default"], d: "毎回確認する（表示は Manual）", n: "迷ったらこれ" },
+    { k: ["acceptEdits"], d: "ファイル編集は自動でOK", n: "コマンド実行は確認する" },
+    { k: ["plan"], d: "読むだけ。計画を出して承認待ち", n: "大きな変更の前に" },
+    { k: ["auto"], d: "安全そうな操作は自動で進める" },
+  ]},
+];
+
+const out = document.getElementById("out");
+const q = document.getElementById("q");
+const chips = document.getElementById("chips");
+const CATS = [{ id: "all", title: "すべて" }, { id: "star", title: "★ 定番" }, ...DATA];
+let cat = "all";
+try { cat = localStorage.getItem("cc-cat") || "all"; } catch (e) {}
+if (!CATS.some(c => c.id === cat)) cat = "all";
+
+const esc = s => s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const isCmd = k => k.startsWith("/") && k.length > 1 || k.startsWith("claude") || k.startsWith("-") || /^[a-z]+[A-Z]?[a-z]*$/.test(k) && !k.includes("+");
+
+function renderChips() {
+  chips.innerHTML = CATS.map(c =>
+    `<button class="chip" type="button" data-cat="${c.id}" aria-pressed="${c.id === cat}">${esc(c.title)}</button>`
+  ).join("");
+}
+
+function render() {
+  const term = q.value.trim().toLowerCase();
+  let html = "";
+  for (const sec of DATA) {
+    if (cat !== "all" && cat !== "star" && cat !== sec.id) continue;
+    const items = sec.items.filter(it => {
+      if (cat === "star" && !it.s) return false;
+      if (!term) return true;
+      return [it.k.join(" "), it.d, it.n || "", sec.title].join(" ").toLowerCase().includes(term);
+    });
+    if (!items.length) continue;
+    html += `<section><h2>${esc(sec.title)}<small>${esc(sec.sub)}</small></h2><div class="list">` +
+      items.map(it => {
+        const keys = it.k.map(k => isCmd(k) ? `<code>${esc(k)}</code>` : `<kbd>${esc(k)}</kbd>`).join('<span class="or">または</span>');
+        return `<div class="row"><div class="keys">${keys}</div><div class="desc">${it.s ? '<span class="star" aria-label="定番">★</span>' : ""}${esc(it.d)}${it.n ? `<span class="note">${esc(it.n)}</span>` : ""}</div></div>`;
+      }).join("") + `</div></section>`;
+  }
+  out.innerHTML = html ? `<div class="wrap" style="padding:0">${html}</div>` : `<p class="empty">「${esc(q.value)}」に当てはまるものはありません</p>`;
+}
+
+chips.addEventListener("click", e => {
+  const b = e.target.closest(".chip");
+  if (!b) return;
+  cat = b.dataset.cat;
+  try { localStorage.setItem("cc-cat", cat); } catch (e) {}
+  renderChips(); render();
+});
+q.addEventListener("input", render);
+renderChips(); render();
+</script>
+</body>
+</html>
